@@ -301,97 +301,74 @@ const handleCourseCategoryChange = (e, isNew = false) => {
   };
 
   const renderSubjectsByGradeLevel = (gradeLevel, courseCategory, selectedSubjects, onChange, isNew = false) => {
-    const availableSubjects = getAvailableSubjects(gradeLevel, courseCategory);
-    const isAdminRole = isNew ? newUser.role === 'admin' : updatedUser.role === 'admin';
+  const availableSubjects = getAvailableSubjects(gradeLevel, courseCategory);
+  const isAdminRole = isNew ? newUser.role === 'admin' : updatedUser.role === 'admin';
 
-    if (isAdminRole) {
-      return null;
-    }
+  if (isAdminRole) {
+    return null;
+  }
 
-    return (
+  return (
+    <div>
+      {gradeLevel === "High School" && (
+        <div>
+          <label>Select Course Category</label>
+          <select
+            value={courseCategory || ""}
+            onChange={(e) => {
+              const newCategory = e.target.value;
+              if (isNew) {
+                setNewUser(prev => ({
+                  ...prev,
+                  courseCategory: newCategory,
+                  subject: prev.subject || [] // preserve subjects
+                }));
+              } else {
+                setUpdatedUser(prev => ({
+                  ...prev,
+                  courseCategory: newCategory,
+                  subject: prev.subject || [] // preserve subjects
+                }));
+              }
+            }}
+          >
+            <option value="">Select Category</option>
+            {Object.keys(SUBJECTS["High School"]).map((category) => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div>
-        {gradeLevel === "High School" && (
-          <div>
-            <label>Select Course Category</label>
-            <select
-              value={courseCategory || ""}
-              onChange={(e) => {
-                const newCategory = e.target.value;
-                if (isNew) {
-                  setNewUser(prev => ({ ...prev, courseCategory: newCategory, subject: [] }));
-                } else {
-                  setUpdatedUser(prev => ({ ...prev, courseCategory: newCategory, subject: [] }));
-                }
-              }}
-            >
-              <option value="">Select Category</option>
-              {Object.keys(SUBJECTS["High School"]).map((category) => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {availableSubjects.length > 0 && (
-          <div>
-            <label>Choose your Subjects</label>
-            <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
-              {availableSubjects.map((subject) => (
-                <div key={subject}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      value={subject}
-                      checked={selectedSubjects?.includes(subject) || false}
-                      onChange={onChange}
-                    />
-                    {subject}
-                  </label>
-                </div>
-              ))}
-              {(isNew ? newUser.subject : updatedUser.subject)
-                ?.filter(subject => !availableSubjects.includes(subject))
-                ?.map(subject => (
-                  <div key={subject}>
-                    <label>
-                      <input
-                        type="checkbox"
-                        value={subject}
-                        checked={selectedSubjects?.includes(subject) || false}
-                        onChange={onChange}
-                      />
-                      {subject} <span style={{ fontStyle: 'italic', color: 'gray' }}>(Other)</span>
-                    </label>
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
-        {availableSubjects.length === 0 && gradeLevel !== 'High School' && (
-          <div>
-            <label>Choose your Subjects</label>
-            <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
-              {(isNew ? newUser.subject : updatedUser.subject)?.map(subject => (
-                <div key={subject}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      value={subject}
-                      checked={selectedSubjects?.includes(subject) || false}
-                      onChange={onChange}
-                    />
-                    {subject} <span style={{ fontStyle: 'italic', color: 'gray' }}>(Other)</span>
-                  </label>
-                </div>
-              ))}
-            </div>
-            {(isNew ? newUser.subject : updatedUser.subject)?.length === 0 && <p>No subjects available for this grade level.</p>}
-          </div>
-        )}
-        {!gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
+        <label>Select Subjects</label>
+        <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
+          {[...availableSubjects, ...(selectedSubjects?.filter(s => !availableSubjects.includes(s)) || [])]
+            .filter((subject, index, self) => self.indexOf(subject) === index) // Remove duplicates
+            .map((subject) => (
+              <div key={subject}>
+                <label>
+                  <input
+                    type="checkbox"
+                    value={subject}
+                    checked={selectedSubjects?.includes(subject) || false}
+                    onChange={onChange}
+                  />
+                  {subject}
+                  {!availableSubjects.includes(subject) && (
+                    <span style={{ fontStyle: 'italic', color: 'gray' }}> (Other)</span>
+                  )}
+                </label>
+              </div>
+            ))}
+        </div>
       </div>
-    );
-  };
+
+      {!gradeLevel && <p>Select subjects after selecting a grade level.</p>}
+    </div>
+  );
+};
+
 
   const handleRoleChangeNew = (e) => {
     const role = e.target.value;
@@ -447,7 +424,7 @@ const handleCourseCategoryChange = (e, isNew = false) => {
                   <option value="High School">High School</option>
                 </select>
                 {newUser.gradeLevel && renderSubjectsByGradeLevel(newUser.gradeLevel, newUser.courseCategory, newUser.subject, (e) => handleSubjectChange(e, true), true)}
-                {!newUser.gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
+                {!newUser.gradeLevel && <p>Select subjects after selecting a grade level.</p>}
               </>
             )}
             <button onClick={handleAddUser}>Add</button>
@@ -504,7 +481,7 @@ const handleCourseCategoryChange = (e, isNew = false) => {
                   <option value="High School">High School</option>
                 </select>
                 {updatedUser.gradeLevel && renderSubjectsByGradeLevel(updatedUser.gradeLevel, updatedUser.courseCategory, updatedUser.subject, handleSubjectChange)}
-                {!updatedUser.gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
+                {!updatedUser.gradeLevel && <p>Select subjects after selecting a grade level.</p>}
               </>
             )}
             <button onClick={handleSaveUser}>Save</button>
