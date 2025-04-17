@@ -401,14 +401,14 @@ const AdminPage = () => {
             <input type="text" placeholder="Last Name" value={newUser.lastName} onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })} />
             <input type="email" placeholder="Email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
             <select value={newUser.role} onChange={handleRoleChangeNew}>
-              <option value="">Choose your role</option>
+              <option value="">Select Role</option>
               <option value="teacher">Teacher</option>
               <option value="admin">Admin</option>
             </select>
             {newUser.role === 'teacher' && (
               <>
                 <select value={newUser.gradeLevel} onChange={(e) => handleGradeLevelChange(e, true)}>
-                  <option value="">Choose Subjects</option>
+                  <option value="">Select Grade Level</option>
                   <option value="Elementary School">Elementary School</option>
                   <option value="Middle School">Middle School</option>
                   <option value="High School">High School</option>
@@ -458,14 +458,14 @@ const AdminPage = () => {
             <input type="text" placeholder="Last Name" value={updatedUser.lastName} onChange={(e) => setUpdatedUser({ ...updatedUser, lastName: e.target.value })} />
             <input type="email" placeholder="Email" value={updatedUser.email} onChange={(e) => setUpdatedUser({ ...updatedUser, email: e.target.value })} />
             <select value={updatedUser.role} onChange={handleRoleChangeEdit}>
-              <option value="">Choose your role</option>
+              <option value="">Select Role</option>
               <option value="teacher">Teacher</option>
               <option value="admin">Admin</option>
             </select>
             {updatedUser.role === 'teacher' && (
               <>
                 <select value={updatedUser.gradeLevel} onChange={handleGradeLevelChange}>
-                  <option value="">Choose Subjects</option>
+                  <option value="">Select Grade Level</option>
                   <option value="Elementary School">Elementary School</option>
                   <option value="Middle School">Middle School</option>
                   <option value="High School">High School</option>
