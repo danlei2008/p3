@@ -67,40 +67,41 @@ const SubjectDrive = () => {
                 </div>
             )}
 
-            {/* 타이틀 */}
-            <h1 style={{
-                marginBottom: '20px',
-                fontSize: '24px',
-                fontWeight: 'bold'
-            }}>
-                {isFullDriveUser ? 'Access Curriculum' : 'Select Your Subject'}
-            </h1>
+            {/* 드롭다운 + Title (only for non-Full Drive users) */}
+            {!isFullDriveUser && (
+                <>
+                    <h1 style={{
+                        marginBottom: '20px',
+                        fontSize: '24px',
+                        fontWeight: 'bold'
+                    }}>
+                        Select Your Subject
+                    </h1>
 
-            {/* 드롭다운 */}
-            {Array.isArray(localSubject) && localSubject.length > 0 && !isFullDriveUser && (
-                <select
-                    onChange={(e) => setSubject(e.target.value)}
-                    value={subject}
-                    style={{
-                        padding: '12px 24px',
-                        fontSize: '16px',
-                        backgroundColor: '#f2f2f2',
-                        color: '#222',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        transition: 'all 0.3s ease',
-                        margin: '10px 0'
-                    }}
-                >
-                    {localSubject.map((s) => (
-                        <option key={s} value={s}>
-                            {s}
-                        </option>
-                    ))}
-                </select>
+                    <select
+                        onChange={(e) => setSubject(e.target.value)}
+                        value={subject}
+                        style={{
+                            padding: '12px 24px',
+                            fontSize: '16px',
+                            backgroundColor: '#f2f2f2',
+                            color: '#222',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                            transition: 'all 0.3s ease',
+                            margin: '10px 0'
+                        }}
+                    >
+                        {localSubject.map((s) => (
+                            <option key={s} value={s}>
+                                {s}
+                            </option>
+                        ))}
+                    </select>
+                </>
             )}
 
             {/* 버튼 */}
@@ -117,16 +118,16 @@ const SubjectDrive = () => {
                     window.open(driveLink[subject], '_blank');
                 }}
                 style={{
-                    padding: '12px 24px',
-                    fontSize: '16px',
+                    padding: '18px 36px',
+                    fontSize: '20px',
                     backgroundColor: '#b80b92',
                     color: 'white',
                     border: 'none',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     cursor: 'pointer',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
                     transition: 'all 0.3s ease',
-                    margin: '10px 0'
+                    margin: '20px 0'
                 }}
             >
                 Access {isFullDriveUser ? 'Curriculum' : `${subject} Curriculum`}
