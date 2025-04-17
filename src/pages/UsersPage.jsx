@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
+import Papa from "papaparse";
 import { db } from "../utils/firebase_store";
 import { collection, onSnapshot, deleteDoc, doc, addDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { auth } from "../utils/firebase_auth";
 import { createUserWithEmailAndPassword, deleteUser, getAuth } from "firebase/auth";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog } from '@fortawesome/free-solid-svg-icons';
-import { driveLink } from "../utils/f_config";
 import { useNavigate } from "react-router-dom";
 
 const SUBJECTS = {
@@ -40,12 +38,13 @@ const AdminPage = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [newUser, setNewUser] = useState({ firstName: "", lastName: "", email: "", password: "FSA123", subject: [], role: "", gradeLevel: "", courseCategory: "" });
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [updatedUser, setUpdatedUser] = useState({ firstName: "", lastName: "", email: "", password: "", subject: [], role: "", gradeLevel: "", courseCategory: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const firebaseAuth = getAuth();
   const navigate = useNavigate();
+  const fileInputRef = useRef();
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
@@ -66,8 +65,67 @@ const AdminPage = () => {
     setFilteredUsers(results);
   }, [searchQuery, users]);
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+  const handleCSVUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file || !file.name.endsWith(".csv")) {
+      alert("Only CSV files are allowed.");
+      return;
+    }
+
+    Papa.parse(file, {
+      complete: async function (results) {
+        const rows = results.data.filter(row => row.length >= 4);
+
+        for (let i = 0; i < rows.length; i++) {
+          const [firstName, lastName, email, role] = rows[i].map(v => v?.trim());
+
+          if (!firstName || !lastName || !email || !role) {
+            alert(`Row ${i + 1}: All fields (first name, last name, email, role) are required.`);
+            return;
+          }
+
+          if (!/^[^\s@]+@gmail\.com$/.test(email)) {
+            alert(`Row ${i + 1}: Invalid email format. Must end with @gmail.com.`);
+            return;
+          }
+
+          if (!["Teacher", "Admin"].includes(role)) {
+            alert(`Row ${i + 1}: Role must be either 'Teacher' or 'Admin'.`);
+            return;
+          }
+        }
+
+        for (let i = 0; i < rows.length; i++) {
+          const [firstName, lastName, email, role] = rows[i].map(v => v.trim());
+          const password = "FSA123";
+          try {
+            const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+            const uid = userCredential.user.uid;
+
+            await addDoc(collection(db, "users"), {
+              uid,
+              firstName,
+              lastName,
+              email,
+              password,
+              subject: role === "Admin" ? ["Full Drive"] : [],
+              role: role.toLowerCase(),
+              authProvider: "admin",
+              createdAt: serverTimestamp(),
+              gradeLevel: "",
+              courseCategory: "",
+            });
+          } catch (error) {
+            console.error(`❌ Error processing ${email}:`, error.message);
+            alert(`Error adding ${email}: ${error.message}`);
+          }
+        }
+        alert("✅ All users uploaded successfully.");
+      },
+      error: (err) => {
+        alert("Error parsing CSV file: " + err.message);
+      },
+    });
   };
 
   const handleOpenAddModal = () => {
@@ -104,23 +162,6 @@ const AdminPage = () => {
     }
   };
 
-  const handleDeleteUser = async (userId, uid) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
-    try {
-      await deleteDoc(doc(db, "users", userId));
-      const currentUser = auth.currentUser;
-      if (currentUser && currentUser.uid === uid) {
-        await deleteUser(currentUser);
-        navigate('/login'); // Redirect to login after deleting current user
-      }
-      setUsers(users.filter((user) => user.id !== userId));
-      setFilteredUsers(filteredUsers.filter((user) => user.id !== userId));
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      alert(`Error deleting user: ${error.message}`);
-    }
-  };
-
   const handleEditUser = (user) => {
     setEditingUser(user);
     setUpdatedUser({
@@ -153,16 +194,28 @@ const AdminPage = () => {
   };
 
   const handleResetPassword = async (userId) => {
-    if (!window.confirm("Are you sure you want to reset this user's password to the default?")) return;
     try {
       await updateDoc(doc(db, "users", userId), {
         password: "FSA123",
       });
-      alert("Password reset successfully.");
+      alert("Password has been reset to default (FSA123)");
     } catch (error) {
-      console.error("Error resetting password:", error);
-      alert(`Error resetting password: ${error.message}`);
+      alert("Error resetting password: " + error.message);
     }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    try {
+      await deleteDoc(doc(db, "users", userId));
+      alert("User deleted from Firestore.");
+    } catch (error) {
+      alert("Error deleting user: " + error.message);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   const handleModalClose = () => {
@@ -189,9 +242,19 @@ const AdminPage = () => {
     const filteredSubjects = currentSubjects.filter(subject => validSubjectsForLevel.includes(subject));
 
     if (isNew) {
-      setNewUser(prev => ({ ...prev, gradeLevel: value, courseCategory: "", subject: filteredSubjects }));
+      setNewUser(prev => ({
+        ...prev,
+        gradeLevel: value,
+        courseCategory: "",
+        subject: filteredSubjects,
+      }));
     } else {
-      setUpdatedUser(prev => ({ ...prev, gradeLevel: value, courseCategory: "", subject: filteredSubjects }));
+      setUpdatedUser(prev => ({
+        ...prev,
+        gradeLevel: value,
+        courseCategory: "",
+        subject: filteredSubjects,
+      }));
     }
   };
 
@@ -202,9 +265,17 @@ const AdminPage = () => {
     const filteredSubjects = currentSubjects.filter(subject => newSubjects.includes(subject));
 
     if (isNew) {
-      setNewUser(prev => ({ ...prev, courseCategory: value, subject: filteredSubjects }));
+      setNewUser(prev => ({
+        ...prev,
+        courseCategory: value,
+        subject: filteredSubjects,
+      }));
     } else {
-      setUpdatedUser(prev => ({ ...prev, courseCategory: value, subject: filteredSubjects }));
+      setUpdatedUser(prev => ({
+        ...prev,
+        courseCategory: value,
+        subject: filteredSubjects,
+      }));
     }
   };
 
@@ -234,11 +305,9 @@ const AdminPage = () => {
     return SUBJECTS[gradeLevel] || [];
   };
 
-  const renderSubjectsByGradeLevel = (gradeLevel, courseCategory, selectedSubjects, onChange) => {
+  const renderSubjectsByGradeLevel = (gradeLevel, courseCategory, selectedSubjects, onChange, isNew = false) => {
     const availableSubjects = getAvailableSubjects(gradeLevel, courseCategory);
-    const isAdminRole = isAddModalOpen ? newUser.role === 'admin' : updatedUser.role === 'admin';
-    const currentSelected = selectedSubjects || (isAddModalOpen ? newUser.subject : updatedUser.subject) || [];
-    const allSubjectsToRender = Array.from(new Set([...availableSubjects, ...currentSelected]));
+    const isAdminRole = isNew ? newUser.role === 'admin' : updatedUser.role === 'admin';
 
     if (isAdminRole) {
       return null;
@@ -253,12 +322,10 @@ const AdminPage = () => {
               value={courseCategory || ""}
               onChange={(e) => {
                 const newCategory = e.target.value;
-                const categorySubjects = SUBJECTS["High School"][newCategory] || [];
-                const nextSubjects = currentSelected.filter(subject => categorySubjects.includes(subject));
-                if (isAddModalOpen) {
-                  setNewUser(prev => ({ ...prev, courseCategory: newCategory, subject: nextSubjects }));
+                if (isNew) {
+                  setNewUser(prev => ({ ...prev, courseCategory: newCategory, subject: [] }));
                 } else {
-                  setUpdatedUser(prev => ({ ...prev, courseCategory: newCategory, subject: nextSubjects }));
+                  setUpdatedUser(prev => ({ ...prev, courseCategory: newCategory, subject: [] }));
                 }
               }}
             >
@@ -270,27 +337,60 @@ const AdminPage = () => {
           </div>
         )}
 
-        {allSubjectsToRender.length > 0 && (
+        {availableSubjects.length > 0 && (
           <div>
             <label>Choose your Subjects</label>
             <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
-              {allSubjectsToRender.map((subject) => (
+              {availableSubjects.map((subject) => (
                 <div key={subject}>
                   <label>
                     <input
                       type="checkbox"
                       value={subject}
-                      checked={currentSelected.includes(subject)}
+                      checked={selectedSubjects?.includes(subject) || false}
                       onChange={onChange}
                     />
                     {subject}
-                    {!availableSubjects.includes(subject) && !Object.values(SUBJECTS["High School"] || {}).flat().includes(subject) && (
-                      <span style={{ fontStyle: 'italic', color: 'gray' }}>(Other)</span>
-                    )}
+                  </label>
+                </div>
+              ))}
+              {(isNew ? newUser.subject : updatedUser.subject)
+                ?.filter(subject => !availableSubjects.includes(subject))
+                ?.map(subject => (
+                  <div key={subject}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        value={subject}
+                        checked={selectedSubjects?.includes(subject) || false}
+                        onChange={onChange}
+                      />
+                      {subject} <span style={{ fontStyle: 'italic', color: 'gray' }}>(Other)</span>
+                    </label>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+        {availableSubjects.length === 0 && gradeLevel !== 'High School' && (
+          <div>
+            <label>Choose your Subjects</label>
+            <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
+              {(isNew ? newUser.subject : updatedUser.subject)?.map(subject => (
+                <div key={subject}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      value={subject}
+                      checked={selectedSubjects?.includes(subject) || false}
+                      onChange={onChange}
+                    />
+                    {subject} <span style={{ fontStyle: 'italic', color: 'gray' }}>(Other)</span>
                   </label>
                 </div>
               ))}
             </div>
+            {(isNew ? newUser.subject : updatedUser.subject)?.length === 0 && <p>No subjects available for this grade level.</p>}
           </div>
         )}
         {!gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
@@ -311,8 +411,7 @@ const AdminPage = () => {
   return (
     <div>
       <h1>Admin Page</h1>
-
-      <div style={{ marginBottom: '15px' }}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
         <input
           type="text"
           placeholder="Search users by name or email"
@@ -320,9 +419,17 @@ const AdminPage = () => {
           onChange={handleSearchChange}
           style={{ padding: '8px', borderRadius: '5px', border: '1px solid #ccc', width: '300px' }}
         />
+        <button onClick={handleOpenAddModal}>Add User</button>
+        <button onClick={() => fileInputRef.current.click()}>
+          CSV Bulk Upload</button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept=".csv"
+          style={{ display: "none" }}
+          onChange={handleCSVUpload}
+        />
       </div>
-
-      <button onClick={handleOpenAddModal}>Add User</button>
 
       {isAddModalOpen && (
         <div className="modal" style={modalStyle}>
@@ -332,19 +439,19 @@ const AdminPage = () => {
             <input type="text" placeholder="Last Name" value={newUser.lastName} onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })} />
             <input type="email" placeholder="Email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
             <select value={newUser.role} onChange={handleRoleChangeNew}>
-              <option value="">Choose your role</option>
+              {!newUser.role && <option value="">Select Role</option>}
               <option value="teacher">Teacher</option>
               <option value="admin">Admin</option>
             </select>
             {newUser.role === 'teacher' && (
               <>
                 <select value={newUser.gradeLevel} onChange={(e) => handleGradeLevelChange(e, true)}>
-                  <option value="">Choose Subjects</option>
+                  {!newUser.gradeLevel && <option value="">Select Grade Level</option>}
                   <option value="Elementary School">Elementary School</option>
                   <option value="Middle School">Middle School</option>
                   <option value="High School">High School</option>
                 </select>
-                {newUser.gradeLevel && renderSubjectsByGradeLevel(newUser.gradeLevel, newUser.courseCategory, newUser.subject, (e) => handleSubjectChange(e, true))}
+                {newUser.gradeLevel && renderSubjectsByGradeLevel(newUser.gradeLevel, newUser.courseCategory, newUser.subject, (e) => handleSubjectChange(e, true), true)}
                 {!newUser.gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
               </>
             )}
@@ -354,12 +461,11 @@ const AdminPage = () => {
         </div>
       )}
 
-      <h2>User List</h2>
       <table border="1" width="100%" style={{ borderCollapse: "collapse", textAlign: "left" }}>
         <thead>
           <tr>
             <th style={{ textAlign: 'center' }}>First Name</th>
-            <th style={{textAlign: 'center' }}>Last Name</th>
+            <th style={{ textAlign: 'center' }}>Last Name</th>
             <th style={{ textAlign: 'center' }}>Email</th>
             <th style={{ textAlign: 'center' }}>Role</th>
             <th style={{ textAlign: 'center' }}>Actions</th>
@@ -375,7 +481,7 @@ const AdminPage = () => {
               <td>
                 <button onClick={() => handleEditUser(user)}>Edit</button>
                 <button onClick={() => handleResetPassword(user.id)}>Reset Password</button>
-                <button onClick={() => handleDeleteUser(user.id, user.uid)} style={{ color: 'red', fontWeight: 'bold' }}>X</button>
+                <button onClick={() => handleDeleteUser(user.id)} style={{ color: 'red' }}>Delete</button>
               </td>
             </tr>
           ))}
@@ -390,14 +496,14 @@ const AdminPage = () => {
             <input type="text" placeholder="Last Name" value={updatedUser.lastName} onChange={(e) => setUpdatedUser({ ...updatedUser, lastName: e.target.value })} />
             <input type="email" placeholder="Email" value={updatedUser.email} onChange={(e) => setUpdatedUser({ ...updatedUser, email: e.target.value })} />
             <select value={updatedUser.role} onChange={handleRoleChangeEdit}>
-              <option value="">Choose your role</option>
+              {!updatedUser.role && <option value="">Select Role</option>}
               <option value="teacher">Teacher</option>
               <option value="admin">Admin</option>
             </select>
             {updatedUser.role === 'teacher' && (
               <>
                 <select value={updatedUser.gradeLevel} onChange={handleGradeLevelChange}>
-                  <option value="">Choose Subjects</option>
+                  {!updatedUser.gradeLevel && <option value="">Select Grade Level</option>}
                   <option value="Elementary School">Elementary School</option>
                   <option value="Middle School">Middle School</option>
                   <option value="High School">High School</option>
