@@ -37,33 +37,35 @@ const SubjectDrive = () => {
             width: '100%',
             position: 'relative'
         }}>
-            {/* ⚙️ 톱니바퀴 */}
-            <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
-                <FontAwesomeIcon
-                    icon={faCog}
-                    style={{ color: '#b80b92', fontSize: '24px', cursor: 'pointer' }}
-                    onClick={() => setShowAdminMenu(prev => !prev)}
-                />
-                {showAdminMenu && (
-                    <div
-                        style={{
-                            marginTop: '8px',
-                            backgroundColor: '#fff',
-                            border: '1px solid #ccc',
-                            borderRadius: '6px',
-                            padding: '6px 12px',
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-                        }}
-                        onClick={() => navigate('/users')}
-                    >
-                        Admin
-                    </div>
-                )}
-            </div>
+            {/* ⚙️ 톱니바퀴 (Only for Full Drive users) */}
+            {isFullDriveUser && (
+                <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
+                    <FontAwesomeIcon
+                        icon={faCog}
+                        style={{ color: '#b80b92', fontSize: '24px', cursor: 'pointer' }}
+                        onClick={() => setShowAdminMenu(prev => !prev)}
+                    />
+                    {showAdminMenu && (
+                        <div
+                            style={{
+                                marginTop: '8px',
+                                backgroundColor: '#fff',
+                                border: '1px solid #ccc',
+                                borderRadius: '6px',
+                                padding: '6px 12px',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                            }}
+                            onClick={() => navigate('/users')}
+                        >
+                            Admin
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* 타이틀 */}
             <h1 style={{
@@ -134,4 +136,3 @@ const SubjectDrive = () => {
 }
 
 export default SubjectDrive;
-
