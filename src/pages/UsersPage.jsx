@@ -302,7 +302,7 @@ const AdminPage = () => {
 
         {availableSubjects.length > 0 && (
           <div>
-            <label>Choose your Subjects</label>
+            <label>Select Subjects</label>
             <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
               {availableSubjects.map((subject) => (
                 <div key={subject}>
@@ -337,7 +337,7 @@ const AdminPage = () => {
         )}
         {availableSubjects.length === 0 && gradeLevel !== 'High School' && (
           <div>
-            <label>Choose your Subjects</label>
+            <label>Select Subjects</label>
             <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
               {(isNew ? newUser.subject : updatedUser.subject)?.map(subject => (
                 <div key={subject}>
@@ -356,7 +356,7 @@ const AdminPage = () => {
             {(isNew ? newUser.subject : updatedUser.subject)?.length === 0 && <p>No subjects available for this grade level.</p>}
           </div>
         )}
-        {!gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
+        {!gradeLevel && <p>Select subjects after selecting a grade level.</p>}
       </div>
     );
   };
@@ -414,7 +414,7 @@ const AdminPage = () => {
                   <option value="High School">High School</option>
                 </select>
                 {newUser.gradeLevel && renderSubjectsByGradeLevel(newUser.gradeLevel, newUser.courseCategory, newUser.subject, (e) => handleSubjectChange(e, true), true)}
-                {!newUser.gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
+                {!newUser.gradeLevel && <p>Select subjects after selecting a grade level.</p>}
               </>
             )}
             <button onClick={handleAddUser}>Add</button>
@@ -471,7 +471,7 @@ const AdminPage = () => {
                   <option value="High School">High School</option>
                 </select>
                 {updatedUser.gradeLevel && renderSubjectsByGradeLevel(updatedUser.gradeLevel, updatedUser.courseCategory, updatedUser.subject, handleSubjectChange)}
-                {!updatedUser.gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
+                {!updatedUser.gradeLevel && <p>Select subjects after selecting a grade level.</p>}
               </>
             )}
             <button onClick={handleSaveUser}>Save</button>
