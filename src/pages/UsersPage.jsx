@@ -282,12 +282,21 @@ const handleCourseCategoryChange = (e, isNew = false) => {
     }
   };
 
-  const getAvailableSubjects = (gradeLevel, courseCategory) => {
-    if (gradeLevel === "High School" && courseCategory) {
-      return SUBJECTS["High School"][courseCategory] || [];
+ const getAvailableSubjects = (gradeLevel, courseCategory) => {
+  if (gradeLevel === "High School") {
+    if (courseCategory && SUBJECTS["High School"][courseCategory]) {
+      return SUBJECTS["High School"][courseCategory]; // ✅ always an array
     }
-    return SUBJECTS[gradeLevel] || [];
-  };
+    return []; // ✅ fallback
+  }
+
+  // For Middle or Elementary School
+  if (SUBJECTS[gradeLevel] && Array.isArray(SUBJECTS[gradeLevel])) {
+    return SUBJECTS[gradeLevel];
+  }
+
+  return []; // ✅ final fallback
+};
 
  const renderSubjectsByGradeLevel = (gradeLevel, courseCategory, selectedSubjects, onChange, isNew = false) => {
   const isAdminRole = isNew ? newUser.role === 'admin' : updatedUser.role === 'admin';
