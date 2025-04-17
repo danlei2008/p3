@@ -236,19 +236,22 @@ const AdminPage = () => {
     }
   }
 
+  const filterValidSubjects = (subjects) =>
+    subjects.filter(subject => validSubjectsForLevel.includes(subject));
+
   if (isNew) {
     setNewUser(prev => ({
       ...prev,
       gradeLevel: value,
+      subject: filterValidSubjects(prev.subject),
       courseCategory: "",
-      // DO NOT touch subject — preserve it as-is
     }));
   } else {
     setUpdatedUser(prev => ({
       ...prev,
       gradeLevel: value,
+      subject: filterValidSubjects(prev.subject),
       courseCategory: "",
-      // DO NOT touch subject — preserve it as-is
     }));
   }
 };
