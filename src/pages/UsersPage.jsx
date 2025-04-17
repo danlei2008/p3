@@ -302,7 +302,7 @@ const AdminPage = () => {
 
         {availableSubjects.length > 0 && (
           <div>
-            <label>Select your Subjects</label>
+            <label>Choose your Subjects</label>
             <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
               {availableSubjects.map((subject) => (
                 <div key={subject}>
@@ -337,7 +337,7 @@ const AdminPage = () => {
         )}
         {availableSubjects.length === 0 && gradeLevel !== 'High School' && (
           <div>
-            <label>Select your Subjects</label>
+            <label>Choose your Subjects</label>
             <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
               {(isNew ? newUser.subject : updatedUser.subject)?.map(subject => (
                 <div key={subject}>
@@ -356,7 +356,7 @@ const AdminPage = () => {
             {(isNew ? newUser.subject : updatedUser.subject)?.length === 0 && <p>No subjects available for this grade level.</p>}
           </div>
         )}
-        {!gradeLevel && <p>Select your subjects after selecting a grade level.</p>}
+        {!gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
       </div>
     );
   };
@@ -401,20 +401,20 @@ const AdminPage = () => {
             <input type="text" placeholder="Last Name" value={newUser.lastName} onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })} />
             <input type="email" placeholder="Email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
             <select value={newUser.role} onChange={handleRoleChangeNew}>
-              <option value="">Select Role</option>
+              {!newUser.role && <option value="">Select Role</option>}
               <option value="teacher">Teacher</option>
               <option value="admin">Admin</option>
             </select>
             {newUser.role === 'teacher' && (
               <>
                 <select value={newUser.gradeLevel} onChange={(e) => handleGradeLevelChange(e, true)}>
-                  <option value="">Select Grade Level</option>
+                  {!newUser.gradeLevel && <option value="">Select Grade Level</option>}
                   <option value="Elementary School">Elementary School</option>
                   <option value="Middle School">Middle School</option>
                   <option value="High School">High School</option>
                 </select>
                 {newUser.gradeLevel && renderSubjectsByGradeLevel(newUser.gradeLevel, newUser.courseCategory, newUser.subject, (e) => handleSubjectChange(e, true), true)}
-                {!newUser.gradeLevel && <p>Select your subjects after selecting a grade level.</p>}
+                {!newUser.gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
               </>
             )}
             <button onClick={handleAddUser}>Add</button>
@@ -458,20 +458,20 @@ const AdminPage = () => {
             <input type="text" placeholder="Last Name" value={updatedUser.lastName} onChange={(e) => setUpdatedUser({ ...updatedUser, lastName: e.target.value })} />
             <input type="email" placeholder="Email" value={updatedUser.email} onChange={(e) => setUpdatedUser({ ...updatedUser, email: e.target.value })} />
             <select value={updatedUser.role} onChange={handleRoleChangeEdit}>
-              <option value="">Select Role</option>
+              {!updatedUser.role && <option value="">Select Role</option>}
               <option value="teacher">Teacher</option>
               <option value="admin">Admin</option>
             </select>
             {updatedUser.role === 'teacher' && (
               <>
                 <select value={updatedUser.gradeLevel} onChange={handleGradeLevelChange}>
-                  <option value="">Select Grade Level</option>
+                  {!updatedUser.gradeLevel && <option value="">Select Grade Level</option>}
                   <option value="Elementary School">Elementary School</option>
                   <option value="Middle School">Middle School</option>
                   <option value="High School">High School</option>
                 </select>
                 {updatedUser.gradeLevel && renderSubjectsByGradeLevel(updatedUser.gradeLevel, updatedUser.courseCategory, updatedUser.subject, handleSubjectChange)}
-                {!updatedUser.gradeLevel && <p>Select your subjects after selecting a grade level.</p>}
+                {!updatedUser.gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
               </>
             )}
             <button onClick={handleSaveUser}>Save</button>
