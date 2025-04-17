@@ -142,6 +142,7 @@ const AdminPage = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(firebaseAuth, newUser.email, newUser.password);
       const uid = userCredential.user.uid;
+      console.log("newUser.subject before add:", newUser.subject); // ADDED LOG
       await addDoc(collection(db, "users"), {
         uid,
         firstName: newUser.firstName,
@@ -176,6 +177,7 @@ const AdminPage = () => {
 
   const handleSaveUser = async () => {
     try {
+      console.log("updatedUser.subject before save:", updatedUser.subject); // ADDED LOG
       await updateDoc(doc(db, "users", editingUser.id), {
         firstName: updatedUser.firstName,
         lastName: updatedUser.lastName,
@@ -249,6 +251,7 @@ const AdminPage = () => {
         const updatedSubjects = checked
           ? [...prev.subject, value]
           : prev.subject.filter(subject => subject !== value);
+        console.log("newUser.subject after change:", updatedSubjects); // ADDED LOG
         return { ...prev, subject: updatedSubjects };
       });
     } else {
@@ -256,6 +259,7 @@ const AdminPage = () => {
         const updatedSubjects = checked
           ? [...prev.subject, value]
           : prev.subject.filter(subject => subject !== value);
+        console.log("updatedUser.subject after change:", updatedSubjects); // ADDED LOG
         return { ...prev, subject: updatedSubjects };
       });
     }
@@ -302,7 +306,7 @@ const AdminPage = () => {
 
         {availableSubjects.length > 0 && (
           <div>
-            <label>Select Subjects</label>
+            <label>Choose your Subjects</label>
             <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
               {availableSubjects.map((subject) => (
                 <div key={subject}>
@@ -337,7 +341,7 @@ const AdminPage = () => {
         )}
         {availableSubjects.length === 0 && gradeLevel !== 'High School' && (
           <div>
-            <label>Select Subjects</label>
+            <label>Choose your Subjects</label>
             <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
               {(isNew ? newUser.subject : updatedUser.subject)?.map(subject => (
                 <div key={subject}>
@@ -356,7 +360,7 @@ const AdminPage = () => {
             {(isNew ? newUser.subject : updatedUser.subject)?.length === 0 && <p>No subjects available for this grade level.</p>}
           </div>
         )}
-        {!gradeLevel && <p>Select subjects after selecting a grade level.</p>}
+        {!gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
       </div>
     );
   };
@@ -383,7 +387,8 @@ const AdminPage = () => {
           style={{ padding: '8px', borderRadius: '5px', border: '1px solid #ccc', width: '300px' }}
         />
         <button onClick={handleOpenAddModal}>Add User</button>
-        <button onClick={() => fileInputRef.current.click()}>CSV Bulk Upload</button>
+        <button onClick={() => fileInputRef.current.click()}>
+          CSV Bulk Upload</button>
         <input
           type="file"
           ref={fileInputRef}
@@ -414,7 +419,7 @@ const AdminPage = () => {
                   <option value="High School">High School</option>
                 </select>
                 {newUser.gradeLevel && renderSubjectsByGradeLevel(newUser.gradeLevel, newUser.courseCategory, newUser.subject, (e) => handleSubjectChange(e, true), true)}
-                {!newUser.gradeLevel && <p>Select subjects after selecting a grade level.</p>}
+                {!newUser.gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
               </>
             )}
             <button onClick={handleAddUser}>Add</button>
@@ -471,7 +476,7 @@ const AdminPage = () => {
                   <option value="High School">High School</option>
                 </select>
                 {updatedUser.gradeLevel && renderSubjectsByGradeLevel(updatedUser.gradeLevel, updatedUser.courseCategory, updatedUser.subject, handleSubjectChange)}
-                {!updatedUser.gradeLevel && <p>Select subjects after selecting a grade level.</p>}
+                {!updatedUser.gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
               </>
             )}
             <button onClick={handleSaveUser}>Save</button>
