@@ -229,19 +229,34 @@ const AdminPage = () => {
   const handleGradeLevelChange = (e, isNew = false) => {
     const value = e.target.value;
     const currentSubjects = isNew ? newUser.subject : updatedUser.subject;
+    let validSubjectsForLevel = [];
+
+    if (SUBJECTS[value] && Array.isArray(SUBJECTS[value])) {
+      validSubjectsForLevel = SUBJECTS[value];
+    } else if (SUBJECTS[value] && typeof SUBJECTS[value] === 'object') {
+      // If it's the High School object, flatten the subject arrays
+      for (const category in SUBJECTS[value]) {
+        if (Array.isArray(SUBJECTS[value][category])) {
+          validSubjectsForLevel = validSubjectsForLevel.concat(SUBJECTS[value][category]);
+        }
+      }
+    }
+
+    const filteredSubjects = currentSubjects.filter(subject => validSubjectsForLevel.includes(subject));
+
     if (isNew) {
       setNewUser(prev => ({
         ...prev,
         gradeLevel: value,
         courseCategory: "",
-        subject: SUBJECTS[value] ? currentSubjects.filter(subject => SUBJECTS[value].includes(subject)) : currentSubjects,
+        subject: filteredSubjects,
       }));
     } else {
       setUpdatedUser(prev => ({
         ...prev,
         gradeLevel: value,
         courseCategory: "",
-        subject: SUBJECTS[value] ? currentSubjects.filter(subject => SUBJECTS[value].includes(subject)) : currentSubjects,
+        subject: filteredSubjects,
       }));
     }
   };
@@ -250,17 +265,19 @@ const AdminPage = () => {
     const value = e.target.value;
     const currentSubjects = isNew ? newUser.subject : updatedUser.subject;
     const newSubjects = (isNew ? SUBJECTS["High School"][value] : SUBJECTS["High School"][value]) || [];
+    const filteredSubjects = currentSubjects.filter(subject => newSubjects.includes(subject));
+
     if (isNew) {
       setNewUser(prev => ({
         ...prev,
         courseCategory: value,
-        subject: currentSubjects.filter(subject => newSubjects.includes(subject)),
+        subject: filteredSubjects,
       }));
     } else {
       setUpdatedUser(prev => ({
         ...prev,
         courseCategory: value,
-        subject: currentSubjects.filter(subject => newSubjects.includes(subject)),
+        subject: filteredSubjects,
       }));
     }
   };
