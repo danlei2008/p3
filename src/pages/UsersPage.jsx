@@ -226,62 +226,50 @@ const AdminPage = () => {
 
   const handleGradeLevelChange = (e, isNew = false) => {
   const value = e.target.value;
-  const currentSubjects = isNew ? newUser.subject : updatedUser.subject;
   let validSubjectsForLevel = [];
 
-  // Collect all valid subjects for the selected grade level
   if (SUBJECTS[value] && Array.isArray(SUBJECTS[value])) {
     validSubjectsForLevel = SUBJECTS[value];
   } else if (SUBJECTS[value] && typeof SUBJECTS[value] === 'object') {
     for (const category in SUBJECTS[value]) {
-      if (Array.isArray(SUBJECTS[value][category])) {
-        validSubjectsForLevel = validSubjectsForLevel.concat(SUBJECTS[value][category]);
-      }
+      validSubjectsForLevel = validSubjectsForLevel.concat(SUBJECTS[value][category]);
     }
   }
 
-  // Merge existing subjects and keep valid or unmatched (retained) ones
-  const mergedSubjects = Array.from(new Set([...currentSubjects]));
-  const filteredSubjects = mergedSubjects.filter(
-    subject => validSubjectsForLevel.includes(subject) || !validSubjectsForLevel.length
-  );
-
-  const updatedState = {
-    gradeLevel: value,
-    courseCategory: "",
-    subject: filteredSubjects,
-  };
-
   if (isNew) {
-    setNewUser(prev => ({ ...prev, ...updatedState }));
+    setNewUser(prev => ({
+      ...prev,
+      gradeLevel: value,
+      courseCategory: "",
+      // DO NOT touch subject — preserve it as-is
+    }));
   } else {
-    setUpdatedUser(prev => ({ ...prev, ...updatedState }));
+    setUpdatedUser(prev => ({
+      ...prev,
+      gradeLevel: value,
+      courseCategory: "",
+      // DO NOT touch subject — preserve it as-is
+    }));
   }
 };
 
 const handleCourseCategoryChange = (e, isNew = false) => {
   const value = e.target.value;
-  const currentSubjects = isNew ? newUser.subject : updatedUser.subject;
-  const newSubjects = SUBJECTS["High School"][value] || [];
-
-  // Preserve valid or unmatched (retained) subjects
-  const mergedSubjects = Array.from(new Set([...currentSubjects]));
-  const filteredSubjects = mergedSubjects.filter(
-    subject => newSubjects.includes(subject) || !newSubjects.length
-  );
-
-  const updatedState = {
-    courseCategory: value,
-    subject: filteredSubjects,
-  };
 
   if (isNew) {
-    setNewUser(prev => ({ ...prev, ...updatedState }));
+    setNewUser(prev => ({
+      ...prev,
+      courseCategory: value,
+      // DO NOT touch subject — preserve it as-is
+    }));
   } else {
-    setUpdatedUser(prev => ({ ...prev, ...updatedState }));
+    setUpdatedUser(prev => ({
+      ...prev,
+      courseCategory: value,
+      // DO NOT touch subject — preserve it as-is
+    }));
   }
 };
-
 
   const handleSubjectChange = (e, isNew = false) => {
     const { value, checked } = e.target;
