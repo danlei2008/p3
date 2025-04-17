@@ -340,7 +340,7 @@ const handleCourseCategoryChange = (e, isNew = false) => {
       )}
 
       <div>
-        <label>Choose your Subjects</label>
+        <label>Select Subjects</label>
         <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
           {allSubjectsToRender.map((subject) => (
             <div key={subject}>
@@ -361,7 +361,7 @@ const handleCourseCategoryChange = (e, isNew = false) => {
         </div>
       </div>
 
-      {!gradeLevel && <p>Choose your subjects after selecting a grade level.</p>}
+      {!gradeLevel && <p>Select subjects after selecting a grade level.</p>}
       {availableSubjects.length === 0 && gradeLevel !== "High School" && (
         <p>No available subjects for this grade level.</p>
       )}
