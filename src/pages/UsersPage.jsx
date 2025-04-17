@@ -228,22 +228,42 @@ const AdminPage = () => {
 
   const handleGradeLevelChange = (e, isNew = false) => {
     const value = e.target.value;
+    const currentSubjects = isNew ? newUser.subject : updatedUser.subject;
     if (isNew) {
-      setNewUser(prev => ({ ...prev, gradeLevel: value, courseCategory: "", subject: [] }));
+      setNewUser(prev => ({
+        ...prev,
+        gradeLevel: value,
+        courseCategory: "",
+        subject: SUBJECTS[value] ? currentSubjects.filter(subject => SUBJECTS[value].includes(subject)) : currentSubjects,
+      }));
     } else {
-      setUpdatedUser(prev => ({ ...prev, gradeLevel: value, courseCategory: "", subject: [] }));
+      setUpdatedUser(prev => ({
+        ...prev,
+        gradeLevel: value,
+        courseCategory: "",
+        subject: SUBJECTS[value] ? currentSubjects.filter(subject => SUBJECTS[value].includes(subject)) : currentSubjects,
+      }));
     }
   };
 
   const handleCourseCategoryChange = (e, isNew = false) => {
     const value = e.target.value;
+    const currentSubjects = isNew ? newUser.subject : updatedUser.subject;
+    const newSubjects = (isNew ? SUBJECTS["High School"][value] : SUBJECTS["High School"][value]) || [];
     if (isNew) {
-      setNewUser(prev => ({ ...prev, courseCategory: value, subject: [] }));
+      setNewUser(prev => ({
+        ...prev,
+        courseCategory: value,
+        subject: currentSubjects.filter(subject => newSubjects.includes(subject)),
+      }));
     } else {
-      setUpdatedUser(prev => ({ ...prev, courseCategory: value, subject: [] }));
+      setUpdatedUser(prev => ({
+        ...prev,
+        courseCategory: value,
+        subject: currentSubjects.filter(subject => newSubjects.includes(subject)),
+      }));
     }
   };
-
   const handleSubjectChange = (e, isNew = false) => {
     const { value, checked } = e.target;
     if (isNew) {
