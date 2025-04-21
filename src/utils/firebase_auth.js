@@ -120,7 +120,7 @@ const signInWithGoogle = async () => {
   }
 };
 
-// 🔹 회원가입 (with Firestore check first)
+// 🔹 회원가입
 const signUp = async ({
   email,
   password,
@@ -168,9 +168,7 @@ const signUp = async ({
   }
 };
 
-export { signUp };
-
-
+// ✅ Export everything cleanly once
 export {
   auth,
   signInWithGoogle,
@@ -180,3 +178,4 @@ export {
   updateUser,
   deleteUser,
 };
+
