@@ -23,11 +23,12 @@ import {
   updateDoc
 } from "firebase/firestore";
 
+// Initialize Firebase app
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-// 🔹 전체 회원 조회 (실시간 업데이트 가능)
+// 🔹 전체 회원 조회
 const getAllUsers = async () => {
   const usersRef = collection(db, "users");
   const querySnapshot = await getDocs(usersRef);
@@ -37,7 +38,7 @@ const getAllUsers = async () => {
   }));
 };
 
-// 🔹 사용자 정보 업데이트 (이름 변경, 과목 추가 등)
+// 🔹 사용자 정보 업데이트
 const updateUser = async (id, updatedData) => {
   try {
     await updateDoc(doc(db, "users", id), updatedData);
@@ -132,14 +133,22 @@ const signUp = async (name, email, password) => {
       return false;
     }
 
+    // Split name into firstName and lastName
+    const nameParts = name.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
     // Firestore에 사용자 정보 저장
     await setDoc(doc(collection(db, "users"), `${name}_${result.user.email}`), {
       name: name,
       email: result.user.email,
-      authProvider: "web",
+      firstName: firstName,
+      lastName: lastName,
+      authProvider: "sign-up",
       password: password,
       createdAt: new Date(),
-      subject: []
+      subject: [],
+      role: "teacher"
     });
 
     alert("Sign up success");
@@ -151,4 +160,12 @@ const signUp = async (name, email, password) => {
   }
 };
 
-export { auth, signInWithGoogle, signIn, signUp, getAllUsers, updateUser, deleteUser };
+export {
+  auth,
+  signInWithGoogle,
+  signIn,
+  signUp,
+  getAllUsers,
+  updateUser,
+  deleteUser
+};
