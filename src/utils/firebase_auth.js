@@ -10,7 +10,7 @@ import {
 
 import { db } from "./firebase_store";
 import { firebaseConfig } from "./f_config";
-import { 
+import {
   addDoc,
   collection,
   getDoc,
@@ -20,7 +20,7 @@ import {
   where,
   getDocs,
   deleteDoc,
-  updateDoc
+  updateDoc,
 } from "firebase/firestore";
 
 // Initialize Firebase app
@@ -32,9 +32,9 @@ const googleProvider = new GoogleAuthProvider();
 const getAllUsers = async () => {
   const usersRef = collection(db, "users");
   const querySnapshot = await getDocs(usersRef);
-  return querySnapshot.docs.map(doc => ({
+  return querySnapshot.docs.map((doc) => ({
     id: doc.id,
-    ...doc.data()
+    ...doc.data(),
   }));
 };
 
@@ -65,16 +65,17 @@ const signIn = async (email, password) => {
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
-    
+
     if (!querySnapshot.empty) {
       const userDoc = querySnapshot.docs[0];
       const userData = userDoc.data();
       console.log("사용자 정보:", userData);
-      
+
       if (userData.subject.length === 0) {
         alert("You don't have any subject");
         return false;
       }
+
       localStorage.setItem("subject", JSON.stringify(userData.subject));
     } else {
       console.log("해당 이메일의 사용자를 찾을 수 없습니다.");
@@ -102,13 +103,12 @@ const signInWithGoogle = async () => {
       return false;
     }
 
-    // 사용자 Firestore 저장
     await addDoc(collection(db, "users"), {
       email: result.user.email,
       authProvider: "google",
       password: "",
       createdAt: new Date(),
-      subject: []
+      subject: [],
     });
 
     alert("Sign up success");
@@ -120,12 +120,12 @@ const signInWithGoogle = async () => {
   }
 };
 
-// 🔹 회원가입
+// 🔹 회원가입 (with Firestore check first)
 const signUp = async (name, email, password) => {
   try {
-    const result = await createUserWithEmailAndPassword(auth, email, password);
+    // Check Firestore first
     const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", result.user.email));
+    const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
@@ -133,12 +133,14 @@ const signUp = async (name, email, password) => {
       return false;
     }
 
-    // Split name into firstName and lastName
+    // Create Auth account
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+
     const nameParts = name.trim().split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 
-    // Firestore에 사용자 정보 저장
+    // Save to Firestore
     await setDoc(doc(collection(db, "users"), `${name}_${result.user.email}`), {
       name: name,
       email: result.user.email,
@@ -148,13 +150,13 @@ const signUp = async (name, email, password) => {
       password: password,
       createdAt: new Date(),
       subject: [],
-      role: "teacher"
+      role: "teacher",
     });
 
     alert("Sign up success");
     return true;
   } catch (error) {
-    alert("User already exists");
+    alert("Sign up failed");
     console.error(error);
     return false;
   }
@@ -167,5 +169,5 @@ export {
   signUp,
   getAllUsers,
   updateUser,
-  deleteUser
+  deleteUser,
 };
