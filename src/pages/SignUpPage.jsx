@@ -3,9 +3,9 @@ import backgroundLogo from "../assets/img/background-logo.png";
 import { useState } from "react";
 import { MdOutlineEmail, MdOutlineLock, MdOutlinePerson } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import { auth, db } from "../utils/firebase"; // ✅ Fixed import path
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "../utils/firebase"; // ✅ Make sure this path is correct
 
 function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -38,15 +38,22 @@ function SignUpPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      const userRef = doc(db, "users", user.uid);
-      await setDoc(userRef, {
-        authProvider: "sign-up", createdAt: serverTimestamp(), email: email, firstName: firstName, lastName: lastName, role: "teacher", subject: "", password: "FSA123"
+      // Set additional data in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        authProvider: "sign-up",
+        createdAt: serverTimestamp(),
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        role: "teacher",
+        subject: "",
+        password: "FSA123" // ⚠️ Not secure – remove in production
       });
 
       navigate("/");
     } catch (error) {
       console.error("Error signing up:", error);
-      alert("Failed to create account.");
+      alert("Sign up failed. Check console for details.");
     }
   };
 
