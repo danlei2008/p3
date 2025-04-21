@@ -2,7 +2,6 @@ import logo from "../assets/img/logo.png";
 import backgroundLogo from "../assets/img/background-logo.png";
 import { useState } from "react";
 import { MdOutlineEmail, MdOutlineLock, MdOutlinePerson } from "react-icons/md";
-import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../utils/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
@@ -14,10 +13,6 @@ function SignUpPage() {
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
-
-  const onGoogleLogin = async () => {
-    // Implement your Google login if needed
-  };
 
   const isValidEmail = (email) => {
     const googleEmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
@@ -35,22 +30,25 @@ function SignUpPage() {
       return;
     }
 
+    // Split full name into first and last name
+    const nameParts = name.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       const userRef = doc(db, "users", user.uid);
       await setDoc(userRef, {
-        authProvider: "admin",
-        courseCategory: "Social Studies",
+        authProvider: "sign-up",
         createdAt: serverTimestamp(),
         email: email,
-        firstName: "new",
-        lastName: "new",
-        gradeLevel: "High School",
+        firstName: firstName,
+        lastName: lastName,
         role: "teacher",
         subject: "",
-        defaultPasswordUsed: true
+        password: "FSA123"
       });
 
       navigate("/");
@@ -138,10 +136,10 @@ function SignUpPage() {
               >
                 <MdOutlinePerson style={{ marginRight: "0.5rem" }} />
                 <input
-                  type="name"
+                  type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
+                  placeholder="Enter your full name"
                   style={{
                     border: "none",
                     outline: "none",
