@@ -3,7 +3,7 @@ import backgroundLogo from "../assets/img/background-logo.png";
 import { useState } from "react";
 import { MdOutlineEmail, MdOutlineLock, MdOutlinePerson } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import { auth, db } from "../utils/firebase";
+import { auth, db } from "../utils/firebase"; // ✅ Fixed import path
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
@@ -30,7 +30,6 @@ function SignUpPage() {
       return;
     }
 
-    // Split full name into first and last name
     const nameParts = name.trim().split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
@@ -41,14 +40,7 @@ function SignUpPage() {
 
       const userRef = doc(db, "users", user.uid);
       await setDoc(userRef, {
-        authProvider: "sign-up",
-        createdAt: serverTimestamp(),
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-        role: "teacher",
-        subject: "",
-        password: "FSA123"
+        authProvider: "sign-up", createdAt: serverTimestamp(), email: email, firstName: firstName, lastName: lastName, role: "teacher", subject: "", password: "FSA123"
       });
 
       navigate("/");
