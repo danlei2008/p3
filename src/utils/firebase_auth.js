@@ -121,7 +121,15 @@ const signInWithGoogle = async () => {
 };
 
 // 🔹 회원가입 (with Firestore check first)
-const signUp = async (name, email, password) => {
+const signUp = async ({
+  email,
+  password,
+  firstName,
+  lastName,
+  role,
+  subject,
+  authProvider,
+}) => {
   try {
     if (!email) {
       alert("Email is required");
@@ -139,30 +147,28 @@ const signUp = async (name, email, password) => {
 
     const result = await createUserWithEmailAndPassword(auth, email, password);
 
-    const nameParts = name.trim().split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
-
     await setDoc(doc(db, "users", result.user.uid), {
-      name: name,
-      email: result.user.email,
-      firstName: firstName,
-      lastName: lastName,
-      authProvider: "sign-up",
-      password: password,
+      email,
+      password,
+      firstName,
+      lastName,
+      name: `${firstName} ${lastName}`,
+      role,
+      subject,
+      authProvider,
       createdAt: new Date(),
-      subject: [],
-      role: "teacher",
     });
 
     alert("Sign up success");
     return true;
   } catch (error) {
     alert(`Sign up failed: ${error.message}`);
-    console.error("Detailed error:", error);
+    console.error("Sign up error:", error);
     return false;
   }
 };
+
+export { signUp };
 
 
 export {
