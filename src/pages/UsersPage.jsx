@@ -417,7 +417,7 @@ const handleCourseCategoryChange = (e, isNew = false) => {
             {newUser.role === 'teacher' && (
               <>
                 <select value={newUser.gradeLevel} onChange={(e) => handleGradeLevelChange(e, true)}>
-                  {!newUser.gradeLevel && <option value="">Select Grade Level</option>}
+                  {!newUser.gradeLevel && <option value="">Select School Level</option>}
                   <option value="Elementary School">Elementary School</option>
                   <option value="Middle School">Middle School</option>
                   <option value="High School">High School</option>
@@ -474,7 +474,7 @@ const handleCourseCategoryChange = (e, isNew = false) => {
             {updatedUser.role === 'teacher' && (
               <>
                 <select value={updatedUser.gradeLevel} onChange={handleGradeLevelChange}>
-                  {!updatedUser.gradeLevel && <option value="">Select Grade Level</option>}
+                  {!updatedUser.gradeLevel && <option value="">Select School Level</option>}
                   <option value="Elementary School">Elementary School</option>
                   <option value="Middle School">Middle School</option>
                   <option value="High School">High School</option>
