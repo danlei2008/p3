@@ -4,51 +4,60 @@ import { useState } from "react";
 import { MdOutlineEmail, MdOutlineLock, MdOutlinePerson } from "react-icons/md";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
-import { signUp, signInWithGoogle } from "../utils/firebase_auth";
+import { auth, db } from "../utils/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 function SignUpPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  
 
   const navigate = useNavigate();
 
-  //no used
   const onGoogleLogin = async () => {
-    var result = await signInWithGoogle();
-    if(result){
-      //로그인 페이지 이동
-      navigate("/");
-    }
+    // Implement your Google login if needed
   };
 
-  
-  const onSignUp = async () => {
+  const isValidEmail = (email) => {
+    const googleEmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    return googleEmailRegex.test(email);
+  };
 
-    if(!isValidEmail(email)){
+  const onSignUp = async () => {
+    if (!isValidEmail(email)) {
       alert("Only Email Format is allowed.");
       return;
     }
 
-    if(password.length == 0){
-      alert("type your password");
+    if (password.length === 0) {
+      alert("Type your password");
       return;
     }
 
-    var result = await signUp(name,email, password);
-    if(result){
-      //로그인 페이지 이동
-      navigate("/");
-    }
-  };
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-  
- 
-  
-  const isValidEmail = (email) => {
-    const googleEmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    return googleEmailRegex.test(email);
+      const userRef = doc(db, "users", user.uid);
+      await setDoc(userRef, {
+        authProvider: "admin",
+        courseCategory: "Social Studies",
+        createdAt: serverTimestamp(),
+        email: email,
+        firstName: "new",
+        lastName: "new",
+        gradeLevel: "High School",
+        role: "teacher",
+        subject: "",
+        defaultPasswordUsed: true
+      });
+
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing up:", error);
+      alert("Failed to create account.");
+    }
   };
 
   return (
@@ -72,7 +81,7 @@ function SignUpPage() {
             top: 40,
             left: 34,
           }}
-        ></img>
+        />
         <div
           style={{
             display: "flex",
@@ -86,16 +95,12 @@ function SignUpPage() {
             backgroundColor: "#fff",
           }}
         >
-          <div
-            style={{
-              width: "308px",
-            }}
-          >
+          <div style={{ width: "308px" }}>
             <img
               style={{ width: "139px", marginBottom: "21px" }}
               src={logo}
               alt="logo"
-            ></img>
+            />
             <div
               style={{
                 fontSize: "30px",
@@ -105,15 +110,22 @@ function SignUpPage() {
             >
               Create Account
             </div>
-
-            <div style={{ color: "#666", marginTop: "10px"}}>
-                If you already have an<br/>
-                account, you can login<br/>
-                <span onClick={() => navigate("/")} style={{ color: "#b80b92",cursor:'pointer' }}>here</span>.
-              </div>
+            <div style={{ color: "#666", marginTop: "10px" }}>
+              If you already have an
+              <br />
+              account, you can login
+              <br />
+              <span
+                onClick={() => navigate("/")}
+                style={{ color: "#b80b92", cursor: "pointer" }}
+              >
+                here
+              </span>
+              .
+            </div>
           </div>
           <div>
-            <div style={{}}>
+            <div>
               <label style={{ fontSize: "14px" }}>Name</label>
               <div
                 style={{
