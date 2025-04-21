@@ -2,59 +2,64 @@ import logo from "../assets/img/logo.png";
 import backgroundLogo from "../assets/img/background-logo.png";
 import { useState } from "react";
 import { MdOutlineEmail, MdOutlineLock, MdOutlinePerson } from "react-icons/md";
+import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "../utils/firebase"; // ✅ Make sure this path is correct
+import { signUp, signInWithGoogle } from "../utils/firebase_auth";
 
 function SignUpPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  
 
   const navigate = useNavigate();
 
+  //no used
+  const onGoogleLogin = async () => {
+    var result = await signInWithGoogle();
+    if(result){
+      //로그인 페이지 이동
+      navigate("/");
+    }
+  };
+
+  
+  const onSignUp = async () => {
+  if (!isValidEmail(email)) {
+    alert("Only Email Format is allowed.");
+    return;
+  }
+
+  if (password.length === 0) {
+    alert("Type your password");
+    return;
+  }
+
+  const nameParts = name.trim().split(" ");
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(" ") || "";
+
+  const result = await signUp({
+    email,
+    password,
+    firstName,
+    lastName,
+    role: "teacher",
+    subject: "",
+    authProvider: "sign-up",
+  });
+
+  if (result) {
+    navigate("/");
+  }
+};
+
+  
+ 
+  
   const isValidEmail = (email) => {
     const googleEmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
     return googleEmailRegex.test(email);
-  };
-
-  const onSignUp = async () => {
-    if (!isValidEmail(email)) {
-      alert("Only Email Format is allowed.");
-      return;
-    }
-
-    if (password.length === 0) {
-      alert("Type your password");
-      return;
-    }
-
-    const nameParts = name.trim().split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Set additional data in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        authProvider: "sign-up",
-        createdAt: serverTimestamp(),
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-        role: "teacher",
-        subject: "",
-        password: "FSA123" // ⚠️ Not secure – remove in production
-      });
-
-      navigate("/");
-    } catch (error) {
-      console.error("Error signing up:", error);
-      alert("Sign up failed. Check console for details.");
-    }
   };
 
   return (
@@ -78,7 +83,7 @@ function SignUpPage() {
             top: 40,
             left: 34,
           }}
-        />
+        ></img>
         <div
           style={{
             display: "flex",
@@ -92,12 +97,16 @@ function SignUpPage() {
             backgroundColor: "#fff",
           }}
         >
-          <div style={{ width: "308px" }}>
+          <div
+            style={{
+              width: "308px",
+            }}
+          >
             <img
               style={{ width: "139px", marginBottom: "21px" }}
               src={logo}
               alt="logo"
-            />
+            ></img>
             <div
               style={{
                 fontSize: "30px",
@@ -107,22 +116,15 @@ function SignUpPage() {
             >
               Create Account
             </div>
-            <div style={{ color: "#666", marginTop: "10px" }}>
-              If you already have an
-              <br />
-              account, you can login
-              <br />
-              <span
-                onClick={() => navigate("/")}
-                style={{ color: "#b80b92", cursor: "pointer" }}
-              >
-                here
-              </span>
-              .
-            </div>
+
+            <div style={{ color: "#666", marginTop: "10px"}}>
+                If you already have an<br/>
+                account, you can login<br/>
+                <span onClick={() => navigate("/")} style={{ color: "#b80b92",cursor:'pointer' }}>here</span>.
+              </div>
           </div>
           <div>
-            <div>
+            <div style={{}}>
               <label style={{ fontSize: "14px" }}>Name</label>
               <div
                 style={{
@@ -135,10 +137,10 @@ function SignUpPage() {
               >
                 <MdOutlinePerson style={{ marginRight: "0.5rem" }} />
                 <input
-                  type="text"
+                  type="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your full name"
+                  placeholder="Enter your name"
                   style={{
                     border: "none",
                     outline: "none",
