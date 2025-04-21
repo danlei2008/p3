@@ -140,8 +140,8 @@ const signUp = async (name, email, password) => {
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 
-    // Save to Firestore
-    await setDoc(doc(collection(db, "users"), `${name}_${result.user.email}`), {
+    // Safe Firestore document creation using UID
+    await setDoc(doc(db, "users", result.user.uid), {
       name: name,
       email: result.user.email,
       firstName: firstName,
@@ -156,11 +156,12 @@ const signUp = async (name, email, password) => {
     alert("Sign up success");
     return true;
   } catch (error) {
-    alert("Sign up failed");
-    console.error(error);
+    alert(`Sign up failed: ${error.message}`);
+    console.error("Detailed error:", error);
     return false;
   }
 };
+
 
 export {
   auth,
