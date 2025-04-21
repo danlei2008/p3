@@ -123,7 +123,11 @@ const signInWithGoogle = async () => {
 // 🔹 회원가입 (with Firestore check first)
 const signUp = async (name, email, password) => {
   try {
-    // Check Firestore first
+    if (!email) {
+      alert("Email is required");
+      return false;
+    }
+
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
@@ -133,14 +137,12 @@ const signUp = async (name, email, password) => {
       return false;
     }
 
-    // Create Auth account
     const result = await createUserWithEmailAndPassword(auth, email, password);
 
     const nameParts = name.trim().split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 
-    // Safe Firestore document creation using UID
     await setDoc(doc(db, "users", result.user.uid), {
       name: name,
       email: result.user.email,
@@ -160,6 +162,7 @@ const signUp = async (name, email, password) => {
     console.error("Detailed error:", error);
     return false;
   }
+};
 };
 
 
