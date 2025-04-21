@@ -163,7 +163,6 @@ const signUp = async (name, email, password) => {
     return false;
   }
 };
-};
 
 
 export {
